@@ -71,7 +71,7 @@ func MakeRequest(action map[string]string) {
 		return
 	}
 
-	req.Header.Set("Key", action["token"])
+	req.Header.Set("Token", action["token"])
 
 	req.Header.Set("Content-Type", "application/json")
 
