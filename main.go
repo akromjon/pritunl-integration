@@ -7,14 +7,21 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"time"
 )
+
+var ErrorFile string = "error.log"
 
 func main() {
 	
 	action, err:=getArguments()
 
-	if(err!=nil){
-		fmt.Println("Error getting action:", err)
+	if(err != nil){
+		
+		errMessage := fmt.Sprintf("Error: %s", err)
+		
+		writeErrorToFile(ErrorFile, errMessage)	
+		
 		return
 	}
 
@@ -23,25 +30,40 @@ func main() {
 
 func getArguments() (map[string]string, error) {
 
-	if len(os.Args) < 6 {
+	if len(os.Args) < 6 {		
+
+		errMessage := fmt.Sprintf("Usage: go run main.go {url} {connected/disconnected} {PritunlID} {ClientUUID}")
 		
-		fmt.Println("Usage: go run main.go {action} {PritunlID} {ClientUUID}")
+		fmt.Println(errMessage)
 		
-		return nil, errors.New("Invalid number of arguments")
+		writeErrorToFile(ErrorFile, errMessage)	
+		
+		return nil, errors.New(errMessage)
 	}
 
 	state := os.Args[2]
 
 	if state != "connected" && state != "disconnected" {
-		fmt.Println("Invalid State")
+
+		errMessage := fmt.Sprintf("Invalid State")
+		
+		fmt.Println(errMessage)
+
+		writeErrorToFile(ErrorFile, errMessage)
+		
 		return nil, errors.New("Invalid State")
 	}
 
 	result := map[string]string{
+
 		"url":        os.Args[1],
+
 		"state":     state,
+
 		"token": 	os.Args[3],
+
 		"pritunl_id":  os.Args[4],
+		
 		"client_uuid": os.Args[5],
 	}
 
@@ -66,7 +88,11 @@ func MakeRequest(action map[string]string) {
 
 	if err != nil {
 
-		fmt.Println("Error creating request:", err)
+		errMessage := fmt.Sprintf("Error: %s", err)
+
+		fmt.Println(errMessage)
+
+		writeErrorToFile(ErrorFile, errMessage)
 
 		return
 	}
@@ -81,7 +107,11 @@ func MakeRequest(action map[string]string) {
 
 	if err != nil {
 
-		fmt.Println("Error making request:", err)
+		errMessage := fmt.Sprintf("Error: %s", err)
+
+		writeErrorToFile(ErrorFile, errMessage)
+
+		fmt.Println(errMessage)
 
 		return
 	}
@@ -90,17 +120,49 @@ func MakeRequest(action map[string]string) {
 
 	if err != nil {
 
-		fmt.Println("Error reading response body:", err)
+		errMessage := fmt.Sprintf("Error: %s", err)
+		
+		writeErrorToFile(ErrorFile, errMessage)	
 
 		return
 	}
 
 	if response.StatusCode!=200 {
+
+		errMessage := fmt.Sprintf("Error: %s", response.Status)
 		
-		fmt.Println("Error:", response.Status)
+		writeErrorToFile(ErrorFile, errMessage)	
 		
 		return
 	}
 
 	
+}
+
+
+func writeErrorToFile(filename, message string) error {
+
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	
+	if err != nil {
+	
+		return err
+	
+	}
+	
+	defer file.Close()
+
+	currentTime := time.Now()
+
+	formattedMessage := fmt.Sprintf("[%s] %s\n", currentTime.Format("02-01-2006 15:04:05"), message)
+
+	_, err = file.WriteString(formattedMessage)
+	
+	if err != nil {
+	
+		return err
+	
+	}
+
+	return nil
 }
