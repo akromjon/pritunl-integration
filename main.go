@@ -62,7 +62,7 @@ func getArguments() (map[string]string, error) {
 
 		"token": 	os.Args[3],
 
-		"pritunl_id":  os.Args[4],
+		"pritunl_user_id":  os.Args[4],
 		
 		"client_uuid": os.Args[5],
 	}
@@ -76,7 +76,7 @@ func MakeRequest(action map[string]string) {
 	
 	params.Add("state", action["state"])	
 
-	params.Add("pritunl_id", action["pritunl_id"])
+	params.Add("pritunl_user_id", action["pritunl_user_id"])
 
 	params.Add("client_uuid", action["client_uuid"])
 	
