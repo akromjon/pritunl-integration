@@ -82,7 +82,7 @@ func MakeRequest(action map[string]string) {
 	
 	query := params.Encode()
 
-	req, err := http.NewRequest("POST", action["url"], strings.NewReader(query))
+	req, err := http.NewRequest("GET", action["url"], strings.NewReader(query))
 
 	if err != nil {
 
