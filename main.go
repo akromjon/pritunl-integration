@@ -74,9 +74,7 @@ func MakeRequest(action map[string]string) {
 	
 	params := url.Values{}
 	
-	params.Add("state", action["state"])
-	
-	params.Add("token", action["token"])
+	params.Add("state", action["state"])	
 
 	params.Add("pritunl_id", action["pritunl_id"])
 
