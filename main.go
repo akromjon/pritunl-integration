@@ -12,7 +12,7 @@ import (
 
 var ErrorFile string = "error.log"
 
-func main() {
+func main() {	
 	
 	action, err:=getArguments()
 
@@ -21,9 +21,9 @@ func main() {
 		errMessage := fmt.Sprintf("Error: %s", err)
 		
 		writeErrorToFile(ErrorFile, errMessage)	
-		
-		return
-	}
+
+		os.Exit(1)
+	}	
 
 	MakeRequest(action)
 }
@@ -41,7 +41,7 @@ func getArguments() (map[string]string, error) {
 		return nil, errors.New(errMessage)
 	}
 
-	state := os.Args[2]
+	state := os.Args[3]
 
 	if state != "connected" && state != "disconnected" {
 
@@ -58,9 +58,9 @@ func getArguments() (map[string]string, error) {
 
 		"url":        os.Args[1],
 
-		"state":     state,
+		"token": 	os.Args[2],
 
-		"token": 	os.Args[3],
+		"state":     state,
 
 		"pritunl_user_id":  os.Args[4],
 		
