@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"errors"
-	"os"
-	"strings"
-	"time"
+	"os"	
+	"time"	
+	"io/ioutil"
 )
 
 var ErrorFile string = "error.log"
@@ -71,71 +71,58 @@ func getArguments() (map[string]string, error) {
 }
 
 func MakeRequest(action map[string]string) {
-	
 	params := url.Values{}
-	
-	params.Add("state", action["state"])	
-
+	params.Add("state", action["state"])
 	params.Add("pritunl_user_id", action["pritunl_user_id"])
-
 	params.Add("client_uuid", action["client_uuid"])
-	
-	query := params.Encode()
 
-	req, err := http.NewRequest("GET", action["url"], strings.NewReader(query))
+	// Include parameters in the URL
+	action["url"] += "?" + params.Encode()
 
+	req, err := http.NewRequest("GET", action["url"], nil)
 	if err != nil {
-
 		errMessage := fmt.Sprintf("Error: %s", err)
-
 		fmt.Println(errMessage)
-
 		writeErrorToFile(ErrorFile, errMessage)
-
 		return
 	}
 
 	req.Header.Set("Token", action["token"])
-
 	req.Header.Set("Content-Type", "application/json")
 
 	client := http.DefaultClient
-
 	response, err := client.Do(req)
-
 	if err != nil {
-
 		errMessage := fmt.Sprintf("Error: %s", err)
-
 		writeErrorToFile(ErrorFile, errMessage)
-
 		fmt.Println(errMessage)
-
 		return
 	}
 
-	defer response.Body.Close()	
+	defer response.Body.Close()
 
+	if response.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(response.Body)
+		errMessage := fmt.Sprintf("Error: %s", string(body))
+		writeErrorToFile(ErrorFile, errMessage)
+		fmt.Println(errMessage)
+		return
+	}
+
+	// Continue processing the response body as needed
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-
-		errMessage := fmt.Sprintf("Error: %s", err)
-		
-		writeErrorToFile(ErrorFile, errMessage)	
-
+		errMessage := fmt.Sprintf("Error reading body: %s", err)
+		writeErrorToFile(ErrorFile, errMessage)
+		fmt.Println(errMessage)
 		return
 	}
 
-	if response.StatusCode!=200 {
-
-		errMessage := fmt.Sprintf("Error: %s", response.Status)
-		
-		writeErrorToFile(ErrorFile, errMessage)	
-		
-		return
-	}
-
-	
+	// Use the 'body' string as needed
+	fmt.Println("Response Body:", string(body))
 }
+
+
 
 
 func writeErrorToFile(filename, message string) error {
